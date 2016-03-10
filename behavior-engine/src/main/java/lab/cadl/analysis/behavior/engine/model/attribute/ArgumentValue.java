@@ -5,7 +5,7 @@ import lab.cadl.analysis.behavior.engine.event.Event;
 /**
  *
  */
-public class ArgumentValue extends DependentValue {
+public class ArgumentValue extends IndependentValue {
     private int position;
 
     public ArgumentValue(int position) {

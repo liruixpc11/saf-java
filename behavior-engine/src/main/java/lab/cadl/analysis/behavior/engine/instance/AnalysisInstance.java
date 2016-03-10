@@ -8,10 +8,10 @@ import java.util.List;
 /**
  *
  */
-public interface AnalysisInstance {
+public interface AnalysisInstance <TD extends AnalysisDesc> {
     Instant startTime();
     Instant endTime();
     long size();
     List<AnalysisInstance> content();
-    AnalysisDesc desc();
+    TD desc();
 }

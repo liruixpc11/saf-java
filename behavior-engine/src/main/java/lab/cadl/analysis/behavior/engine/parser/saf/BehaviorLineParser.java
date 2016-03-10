@@ -1,10 +1,7 @@
 package lab.cadl.analysis.behavior.engine.parser.saf;
 
 import lab.cadl.analysis.behavior.engine.exception.EngineException;
-import lab.cadl.analysis.behavior.engine.model.attribute.PrimeValue;
-import lab.cadl.analysis.behavior.engine.model.attribute.RangeValue;
-import lab.cadl.analysis.behavior.engine.model.attribute.TimeRangeValue;
-import lab.cadl.analysis.behavior.engine.model.attribute.TimeValue;
+import lab.cadl.analysis.behavior.engine.model.attribute.*;
 import lab.cadl.analysis.behavior.engine.model.behavior.*;
 import lab.cadl.analysis.behavior.engine.model.QualifiedName;
 import lab.cadl.analysis.behavior.engine.model.SymbolTable;
@@ -16,13 +13,11 @@ import lab.cadl.analysis.behavior.engine.model.op.LogicalOp;
 import lab.cadl.analysis.behavior.engine.model.op.RelativeOp;
 import lab.cadl.analysis.behavior.engine.model.op.TimeOp;
 import lab.cadl.analysis.behavior.engine.model.state.StateDesc;
-import lab.cadl.analysis.behavior.grammar.BehaviorBaseListener;
 import lab.cadl.analysis.behavior.grammar.BehaviorBaseVisitor;
 import lab.cadl.analysis.behavior.grammar.BehaviorLexer;
 import lab.cadl.analysis.behavior.grammar.BehaviorParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,12 +87,12 @@ public class BehaviorLineParser {
                     TimeConstraintType type = TimeConstraintType.parse(timeCtx.TIME_POSITION().getText());
                     RelativeOp op = RelativeOp.parse(timeCtx.RELATIVE_OP().getText());
                     if (timeCtx.time().size() == 1) {
-                        TimeValue time = parseTime(timeCtx.time(0));
+                        DurationValue time = parseTime(timeCtx.time(0));
                         return new ConstraintBehaviorNode(child, new TimeConstraint(type, op, time));
                     } else {
-                        TimeValue begin = parseTime(timeCtx.time(0));
-                        TimeValue end = parseTime(timeCtx.time(1));
-                        return new ConstraintBehaviorNode(child, new TimeConstraint(type, op, new TimeRangeValue(begin, end)));
+                        DurationValue begin = parseTime(timeCtx.time(0));
+                        DurationValue end = parseTime(timeCtx.time(1));
+                        return new ConstraintBehaviorNode(child, new TimeConstraint(type, op, new DurationRangeValue(begin, end)));
                     }
                 } else {
                     throw new EngineException("未知约束类型：" + ctx.behaviorConstraint().getText());
@@ -105,13 +100,13 @@ public class BehaviorLineParser {
             }
         }
 
-        private TimeValue parseTime(BehaviorParser.TimeContext ctx) {
+        private DurationValue parseTime(BehaviorParser.TimeContext ctx) {
             long value = Long.parseLong(ctx.INT().getText());
             String unit = ctx.TIME_UNIT().getText().toLowerCase();
             if (unit.startsWith("m")) {
-                return new TimeValue(value);
+                return DurationValue.fromMs(value);
             } else if (unit.startsWith("s")) {
-                return new TimeValue(value * 1000);
+                return DurationValue.fromMs(value * 1000);
             } else {
                 throw new EngineException("未知时间单位：" + unit);
             }

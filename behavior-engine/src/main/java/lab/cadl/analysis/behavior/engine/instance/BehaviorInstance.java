@@ -1,6 +1,7 @@
 package lab.cadl.analysis.behavior.engine.instance;
 
 import lab.cadl.analysis.behavior.engine.model.AnalysisDesc;
+import lab.cadl.analysis.behavior.engine.model.behavior.BehaviorDesc;
 
 import java.time.Instant;
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.List;
 /**
  *
  */
-public class BehaviorInstance implements AnalysisInstance {
+public class BehaviorInstance implements AnalysisInstance<BehaviorDesc> {
     private List<AnalysisInstance> content;
 
     @Override
@@ -32,7 +33,7 @@ public class BehaviorInstance implements AnalysisInstance {
     }
 
     @Override
-    public AnalysisDesc desc() {
+    public BehaviorDesc desc() {
         return null;
     }
 }

@@ -18,6 +18,7 @@ public class StateDesc extends IdentifiedObject implements AnalysisDesc {
     private Map<String, StateArgument> attributes = new HashMap<>();
     private StateRef ref;
     private StateConstraint constraint;
+    private boolean dependent;
 
     public StateDesc(QualifiedName qualifiedName) {
         super(qualifiedName);
@@ -29,10 +30,17 @@ public class StateDesc extends IdentifiedObject implements AnalysisDesc {
 
     public void put(String id, RelativeOp op, Value value) {
         this.attributes.put(id, new StateArgument(id, op, value));
+        if (value.isDependent()) {
+            this.dependent = true;
+        }
     }
 
     public boolean isPrime() {
         return ref == null;
+    }
+
+    public boolean isDependent() {
+        return dependent;
     }
 
     public StateRef getRef() {
@@ -41,6 +49,9 @@ public class StateDesc extends IdentifiedObject implements AnalysisDesc {
 
     public void setRef(StateRef ref) {
         this.ref = ref;
+        if (ref != null && ref.getRef().isDependent()) {
+            this.dependent = true;
+        }
     }
 
     public StateConstraint getConstraint() {

@@ -1,7 +1,9 @@
 package lab.cadl.analysis.behavior.engine.processors;
 
+import lab.cadl.analysis.behavior.engine.event.Event;
 import lab.cadl.analysis.behavior.engine.event.EventCriteria;
 import lab.cadl.analysis.behavior.engine.event.EventRepository;
+import lab.cadl.analysis.behavior.engine.instance.AnalysisInstanceRegistry;
 import lab.cadl.analysis.behavior.engine.instance.StateInstance;
 import lab.cadl.analysis.behavior.engine.model.attribute.IndependentValue;
 import lab.cadl.analysis.behavior.engine.model.attribute.PrimeValue;
@@ -19,20 +21,40 @@ import java.util.stream.Collectors;
  */
 public class StateProcessor {
     private EventRepository eventRepository;
+    private AnalysisInstanceRegistry instanceRegistry;
+
+    public StateProcessor(EventRepository eventRepository, AnalysisInstanceRegistry instanceRegistry) {
+        this.eventRepository = eventRepository;
+        this.instanceRegistry = instanceRegistry;
+    }
 
     public List<StateInstance> process(StateDesc desc) {
-        List<EventCriteria> criteriaList = new ArrayList<>();
-        for (StateArgument argument : desc.getArguments().values()) {
-            if (argument.getValue() instanceof IndependentValue) {
-                criteriaList.add(new EventCriteria(argument.getName(), argument.getOp(), (IndependentValue) argument.getValue()));
-            } else {
-                IndependentValue value = resolve(argument.getValue());
-                criteriaList.add(new EventCriteria(argument.getName(), argument.getOp(), value));
-            }
+        // 已经处理过的直接返回结果处理
+        List<StateInstance> instances = instanceRegistry.query(desc);
+        if (instances != null) {
+            return instances;
         }
+
+        if (desc.isDependent()) {
+            return processDependent(desc);
+        } else {
+            return processIndependent(desc);
+        }
+    }
+
+    private List<StateInstance> processDependent(StateDesc desc) {
+        return Collections.emptyList();
+    }
+
+    private List<StateInstance> processIndependent(StateDesc desc) {
+        List<EventCriteria> criteriaList = desc.getArguments().values()
+                .stream()
+                .map(argument -> new EventCriteria(argument.getName(), argument.getOp(), (IndependentValue) argument.getValue()))
+                .collect(Collectors.toList());
 
         return eventRepository.query("", criteriaList).stream().map(e -> new StateInstance(e, desc)).collect(Collectors.toList());
     }
+
 
     private IndependentValue resolve(Value value) {
         return new PrimeValue<>();

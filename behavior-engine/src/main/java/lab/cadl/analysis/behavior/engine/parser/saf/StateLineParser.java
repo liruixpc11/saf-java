@@ -95,9 +95,11 @@ public class StateLineParser {
                 long max = Long.parseLong(values[1]);
                 return new RangeValue(min, max);
             } else if (value.variable() != null) {
-                String namespace = value.variable().ID(0).getText();
-                String name = value.variable().ID(1).getText();
-                return new VariableValue(namespace, name);
+                String namespace = desc.getNameSpace();
+                String name = value.variable().ID(0).getText();
+                String attribute = value.variable().ID(1).getText();
+                StateDesc desc = symbolTable.checkState(namespace, name);
+                return new VariableValue(desc, attribute);
             } else if (value.argument() != null) {
                 int position = Integer.parseInt(value.argument().INT().getText());
                 return new ArgumentValue(position);

@@ -8,14 +8,14 @@ import java.io.InputStream;
 /**
  *
  */
-public class FileRepository implements Repository {
+public class FileRuleRepository implements RuleRepository {
     private File repositoryDir;
 
-    public FileRepository() {
+    public FileRuleRepository() {
         this.repositoryDir = new File(".");
     }
 
-    public FileRepository(File repositoryDir) {
+    public FileRuleRepository(File repositoryDir) {
         this.repositoryDir = repositoryDir;
     }
 

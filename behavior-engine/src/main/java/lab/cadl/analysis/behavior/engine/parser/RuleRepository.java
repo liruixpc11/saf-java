@@ -5,6 +5,6 @@ import java.io.InputStream;
 /**
  *
  */
-public interface Repository {
+public interface RuleRepository {
     InputStream open(String path);
 }

@@ -11,7 +11,7 @@ import java.util.List;
 /**
  *
  */
-public class StateInstance implements AnalysisInstance {
+public class StateInstance implements AnalysisInstance<StateDesc> {
     private Event event;
     private StateDesc desc;
 
@@ -41,7 +41,7 @@ public class StateInstance implements AnalysisInstance {
     }
 
     @Override
-    public AnalysisDesc desc() {
+    public StateDesc desc() {
         return desc;
     }
 }

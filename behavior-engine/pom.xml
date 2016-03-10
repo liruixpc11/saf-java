@@ -18,8 +18,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>lab.cadl.analysis</groupId>
-            <artifactId>event-repository</artifactId>
+            <groupId>com.intellij</groupId>
+            <artifactId>annotations</artifactId>
         </dependency>
         <dependency>
             <groupId>org.antlr</groupId>

@@ -12,6 +12,7 @@
         <module>behavior-engine</module>
         <module>analysis-utilities</module>
         <module>event-repository-sqlite</module>
+        <module>saf-main</module>
     </modules>
 
     <parent>
@@ -32,6 +33,17 @@
                 <groupId>lab.cadl.analysis</groupId>
                 <artifactId>behavior-engine</artifactId>
                 <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>lab.cadl.analysis</groupId>
+                <artifactId>event-repository-sqlite</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.intellij</groupId>
+                <artifactId>annotations</artifactId>
+                <version>5.1</version>
             </dependency>
 
             <dependency>

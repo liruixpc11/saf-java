@@ -1,7 +1,5 @@
 package lab.cadl.analysis.behavior.engine.model.constraint;
 
-import lab.cadl.analysis.behavior.engine.model.attribute.TimeValue;
-import lab.cadl.analysis.behavior.engine.model.attribute.TimeRangeValue;
 import lab.cadl.analysis.behavior.engine.model.attribute.Value;
 import lab.cadl.analysis.behavior.engine.model.op.RelativeOp;
 

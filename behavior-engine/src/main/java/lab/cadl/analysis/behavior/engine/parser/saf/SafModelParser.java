@@ -5,9 +5,9 @@ import lab.cadl.analysis.behavior.engine.model.*;
 import lab.cadl.analysis.behavior.engine.model.behavior.BehaviorDesc;
 import lab.cadl.analysis.behavior.engine.model.output.OutputDesc;
 import lab.cadl.analysis.behavior.engine.model.state.StateDesc;
-import lab.cadl.analysis.behavior.engine.parser.FileRepository;
+import lab.cadl.analysis.behavior.engine.parser.FileRuleRepository;
 import lab.cadl.analysis.behavior.engine.parser.ModelParser;
-import lab.cadl.analysis.behavior.engine.parser.Repository;
+import lab.cadl.analysis.behavior.engine.parser.RuleRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +31,7 @@ public class SafModelParser implements ModelParser {
     private OutputLineParser outputLineParser = new OutputLineParser();
 
     private SymbolTable symbolTable;
-    private Repository repository = new FileRepository();
+    private RuleRepository ruleRepository = new FileRuleRepository();
 
     public SafModelParser() {
         symbolTable = new SymbolTable();
@@ -41,8 +41,8 @@ public class SafModelParser implements ModelParser {
         this.symbolTable = symbolTable;
     }
 
-    public SafModelParser setRepository(Repository repository) {
-        this.repository = repository;
+    public SafModelParser setRuleRepository(RuleRepository ruleRepository) {
+        this.ruleRepository = ruleRepository;
         return this;
     }
 
@@ -143,14 +143,14 @@ public class SafModelParser implements ModelParser {
     }
 
     private BehaviorModel parseImport(String path) throws IOException {
-        try (InputStream inputStream = repository.open(path)) {
+        try (InputStream inputStream = ruleRepository.open(path)) {
             return parse(inputStream);
         }
     }
 
     public static void main(String[] args) {
-        Repository repository = new FileRepository(new File("/Users/lirui/IdeaProjects/analysis-parent/behavior-engine/src/main/resources/lab/cadl/analysis/behavior/samples"));
-        SafModelParser parser = new SafModelParser().setRepository(repository);
+        RuleRepository ruleRepository = new FileRuleRepository(new File("/Users/lirui/IdeaProjects/analysis-parent/behavior-engine/src/main/resources/lab/cadl/analysis/behavior/samples"));
+        SafModelParser parser = new SafModelParser().setRuleRepository(ruleRepository);
         parse(parser, "usermodels.doshussain03");
         parse(parser, "net.attacks.dnskaminsky");
         parse(parser, "net.attacks.simpleportscan");

@@ -3,11 +3,11 @@ package lab.cadl.analysis.behavior.engine.model.attribute;
 /**
  *
  */
-public class TimeRangeValue extends IndependentValue {
-    private TimeValue begin;
-    private TimeValue end;
+public class DurationRangeValue extends IndependentValue {
+    private DurationValue begin;
+    private DurationValue end;
 
-    public TimeRangeValue(TimeValue begin, TimeValue end) {
+    public DurationRangeValue(DurationValue begin, DurationValue end) {
         this.begin = begin;
         this.end = end;
     }
