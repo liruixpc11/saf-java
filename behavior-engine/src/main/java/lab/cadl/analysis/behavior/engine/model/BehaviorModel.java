@@ -11,6 +11,7 @@ import java.util.List;
  *
  */
 public class BehaviorModel extends IdentifiedObject {
+    // 过滤事件，只处理满足条件的事件
     private String qualifier;
     private SymbolTable symbolTable;
     private List<String> importStrings = new ArrayList<>();

@@ -16,10 +16,10 @@ import java.sql.SQLException;
  */
 public class ProcessIndependentStates {
     public static void main(String[] args) throws SQLException {
-        try (EventRepository repository = new SqliteEventRepository("/Users/lirui/IdeaProjects/analysis-parent/data/sqlite/dnsflows_5000rec.sqlite")) {
+        try (EventRepository repository = new SqliteEventRepository("/Users/lirui/IdeaProjects/analysis-parent/data/sqlite/tcpudpdns_mix_20rec.sqlite")) {
             RuleRepository ruleRepository = new FileRuleRepository(new File("/Users/lirui/IdeaProjects/analysis-parent/behavior-engine/src/main/resources/lab/cadl/analysis/behavior/samples"));
             SafModelParser parser = new SafModelParser().setRuleRepository(ruleRepository);
-            BehaviorModel model = parser.parse("net.base_proto.udppktpair");
+            BehaviorModel model = parser.parse("bscripts.ft_constraints_1");
 
             System.out.println("=======");
             for (StateDesc stateDesc : model.getStates()) {
