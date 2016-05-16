@@ -44,4 +44,9 @@ public class StateInstance implements AnalysisInstance<StateDesc> {
     public StateDesc desc() {
         return desc;
     }
+
+    @Override
+    public String toString() {
+        return desc.getId() + "-" + event.toString();
+    }
 }

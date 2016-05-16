@@ -2,8 +2,11 @@ package lab.cadl.analysis.behavior.engine.event.repository.sqlite;
 
 
 import lab.cadl.analysis.behavior.engine.event.Event;
+import lab.cadl.analysis.behavior.engine.event.EventAssignment;
 import lab.cadl.analysis.behavior.engine.event.EventCriteria;
 import lab.cadl.analysis.behavior.engine.event.EventRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.time.Instant;
@@ -13,6 +16,8 @@ import java.util.*;
  *
  */
 public class SqliteEventRepository implements EventRepository {
+    private static final Logger logger = LoggerFactory.getLogger(SqliteEventRepository.class);
+
     private static final String EVENT_NUMBER = "eventno";
     private static final String EVENT_TYPE = "eventtype";
     private static final String TIMESTAMP = "timestamp";
@@ -31,20 +36,22 @@ public class SqliteEventRepository implements EventRepository {
 
     @Override
     public List<Event> list(String eventType) {
-        return executeQuery(String.format("select * from %s", eventType));
+        return executeQuery(String.format("select * from %s", eventType), null);
     }
 
-    private List<Event> executeQuery(String sql) {
+    private List<Event> executeQuery(String sql, List<EventAssignment> assignmentList) {
         try {
             Statement statement = connection.createStatement();
             try (ResultSet rs = statement.executeQuery(sql)) {
+                logger.debug("query result count {}", rs.getFetchSize());
+
                 List<String> columns = queryColumnNames(rs);
                 checkRequiredColumns(columns, requiredColumns);
                 columns.removeAll(requiredColumnList);
 
                 List<Event> events = new ArrayList<>();
                 while (rs.next()) {
-                    Event event = parseEvent(rs, columns);
+                    Event event = parseEvent(rs, columns, assignmentList);
                     events.add(event);
                 }
 
@@ -56,20 +63,28 @@ public class SqliteEventRepository implements EventRepository {
     }
 
     @Override
-    public List<Event> query(String eventType, List<EventCriteria> criteriaList) {
+    public List<Event> query(String eventType, List<EventCriteria> criteriaList, List<EventAssignment> assignmentList) {
         String sql = String.format("select * from %s", eventType);
         if (!criteriaList.isEmpty()) {
             sql += " where ";
             // TODO 处理不同类型的SQL条件
+            boolean first = true;
             for (EventCriteria criteria : criteriaList) {
+                if (first) {
+                    first = false;
+                } else {
+                    sql += " and ";
+                }
+
                 sql += criteria.getName() + " " + criteria.getOp().getOp() + " " + criteria.getValue().toString();
             }
         }
 
-        return executeQuery(sql);
+        logger.debug("sqlite query string: {}", sql);
+        return executeQuery(sql, assignmentList);
     }
 
-    private Event parseEvent(ResultSet rs, List<String> columns) throws SQLException {
+    private Event parseEvent(ResultSet rs, List<String> columns, List<EventAssignment> assignmentList) throws SQLException {
         long number = rs.getLong(EVENT_NUMBER);
         String type = rs.getString(EVENT_TYPE);
         long seconds = rs.getLong(TIMESTAMP);
@@ -80,6 +95,12 @@ public class SqliteEventRepository implements EventRepository {
 
         for (String name : columns) {
             event.attr(name, rs.getObject(name));
+        }
+
+        if (assignmentList != null) {
+            for (EventAssignment assignment : assignmentList) {
+                event.attr(assignment.getName(), rs.getObject(assignment.getPosition()));
+            }
         }
 
         return event;

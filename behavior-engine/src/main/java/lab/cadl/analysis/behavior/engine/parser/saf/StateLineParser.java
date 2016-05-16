@@ -61,6 +61,14 @@ public class StateLineParser {
 
             StateDesc refState = symbolTable.checkState(namespace, name);
             StateRef ref = new StateRef(refState);
+
+            if (ctx.context() != null) {
+                String contextName = ctx.context().ID().getText();
+                // namespace is same with current state desc
+                StateDesc context = symbolTable.checkState(desc.getNameSpace(), contextName);
+                ref.setContext(context);
+            }
+
             desc.setRef(ref);
         }
 

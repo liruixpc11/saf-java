@@ -1,7 +1,8 @@
 grammar Behavior;
 
 // model output
-modelOutput: modelId '(' ID (',' ID)* ')';
+modelOutput: modelId '(' ID (',' ID)* ')'
+        | modelId;
 modelId: ID;
 
 // behavior expression
@@ -89,6 +90,7 @@ fragment ID_LETER : 'a'..'z' | 'A'..'Z' | '_';
 fragment DIGIT : '0'..'9';
 
 // id
-ID : ID_LETER (ID_LETER | DIGIT)*;
+// NOTE can begin weith digit!!
+ID : (ID_LETER | DIGIT) (ID_LETER | DIGIT)*;
 
 WS : [ \t\r\n]+ -> skip;

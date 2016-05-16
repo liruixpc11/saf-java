@@ -10,7 +10,7 @@ import java.util.List;
 public interface EventRepository extends AutoCloseable {
     List<Event> list(String eventType);
 
-    List<Event> query(String eventType, List<EventCriteria> criteriaList);
+    List<Event> query(String eventType, List<EventCriteria> criteriaList, List<EventAssignment> assignmentList);
 
     @Override
     void close();

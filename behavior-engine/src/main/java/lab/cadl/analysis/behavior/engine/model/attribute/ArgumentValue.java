@@ -12,8 +12,13 @@ public class ArgumentValue extends IndependentValue {
         this.position = position;
     }
 
-    public IndependentValue resolve(Event event) {
-        return ValueUtils.wrap(event.attr(position));
+    public int position() {
+        return position;
+    }
+
+    @Override
+    public boolean isAssignment() {
+        return true;
     }
 
     @Override

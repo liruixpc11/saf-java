@@ -12,10 +12,15 @@ import java.util.Map;
 public class StateRef {
 
     private StateDesc ref;
+    private StateDesc context;
     private Map<String, StateArgument> arguments = new HashMap<>();
 
     public StateRef(StateDesc ref) {
         this.ref = ref;
+    }
+
+    public StateDesc getContext() {
+        return context;
     }
 
     public StateDesc getRef() {
@@ -24,6 +29,10 @@ public class StateRef {
 
     public Map<String, StateArgument> getArguments() {
         return arguments;
+    }
+
+    public void setContext(StateDesc context) {
+        this.context = context;
     }
 
     public StateRef put(String name, RelativeOp op, Value value) {

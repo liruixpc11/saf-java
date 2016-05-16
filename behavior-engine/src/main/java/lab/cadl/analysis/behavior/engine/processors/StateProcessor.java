@@ -1,10 +1,12 @@
 package lab.cadl.analysis.behavior.engine.processors;
 
 import lab.cadl.analysis.behavior.engine.event.Event;
+import lab.cadl.analysis.behavior.engine.event.EventAssignment;
 import lab.cadl.analysis.behavior.engine.event.EventCriteria;
 import lab.cadl.analysis.behavior.engine.event.EventRepository;
 import lab.cadl.analysis.behavior.engine.instance.AnalysisInstanceRegistry;
 import lab.cadl.analysis.behavior.engine.instance.StateInstance;
+import lab.cadl.analysis.behavior.engine.model.attribute.ArgumentValue;
 import lab.cadl.analysis.behavior.engine.model.attribute.IndependentValue;
 import lab.cadl.analysis.behavior.engine.model.attribute.PrimeValue;
 import lab.cadl.analysis.behavior.engine.model.attribute.Value;
@@ -49,10 +51,17 @@ public class StateProcessor {
     private List<StateInstance> processIndependent(StateDesc desc) {
         List<EventCriteria> criteriaList = desc.getArguments().values()
                 .stream()
+                .filter(argument -> !argument.getValue().isAssignment())
                 .map(argument -> new EventCriteria(argument.getName(), argument.getOp(), (IndependentValue) argument.getValue()))
                 .collect(Collectors.toList());
 
-        return eventRepository.query("", criteriaList).stream().map(e -> new StateInstance(e, desc)).collect(Collectors.toList());
+        List<EventAssignment> assignmentList = desc.getArguments().values()
+                .stream()
+                .filter(argument -> argument.getValue().isAssignment())
+                .map(argument -> new EventAssignment(argument.getName(), ((ArgumentValue) argument.getValue()).position()))
+                .collect(Collectors.toList());
+
+        return eventRepository.query("PACKET_TCP", criteriaList, assignmentList).stream().map(e -> new StateInstance(e, desc)).collect(Collectors.toList());
     }
 
 
