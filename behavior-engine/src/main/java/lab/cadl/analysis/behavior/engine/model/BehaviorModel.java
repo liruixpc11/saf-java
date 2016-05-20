@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class BehaviorModel extends IdentifiedObject {
     // 过滤事件，只处理满足条件的事件
-    private String qualifier;
+    private StateDesc qualifier;
     private SymbolTable symbolTable;
     private List<String> importStrings = new ArrayList<>();
     private List<StateDesc> states = new ArrayList<>();
@@ -23,11 +23,11 @@ public class BehaviorModel extends IdentifiedObject {
         this.symbolTable = symbolTable;
     }
 
-    public String getQualifier() {
+    public StateDesc getQualifier() {
         return qualifier;
     }
 
-    public void setQualifier(String qualifier) {
+    public void setQualifier(StateDesc qualifier) {
         this.qualifier = qualifier;
     }
 
@@ -52,14 +52,17 @@ public class BehaviorModel extends IdentifiedObject {
     }
 
     public void addState(StateDesc state) {
+        state.setModel(this);
         states.add(state);
     }
 
     public void addBehavior(BehaviorDesc behavior) {
+        behavior.setModel(this);
         behaviors.add(behavior);
     }
 
     public void addOutput(OutputDesc output) {
+        output.setModel(this);
         outputs.add(output);
     }
 

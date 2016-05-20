@@ -61,7 +61,8 @@ public class StateProcessor {
                 .map(argument -> new EventAssignment(argument.getName(), ((ArgumentValue) argument.getValue()).position()))
                 .collect(Collectors.toList());
 
-        return eventRepository.query("PACKET_TCP", criteriaList, assignmentList).stream().map(e -> new StateInstance(e, desc)).collect(Collectors.toList());
+        String eventType = desc.getModel().getQualifier().arg("eventtype").toString();
+        return eventRepository.query(eventType, criteriaList, assignmentList).stream().map(e -> new StateInstance(e, desc)).collect(Collectors.toList());
     }
 
 

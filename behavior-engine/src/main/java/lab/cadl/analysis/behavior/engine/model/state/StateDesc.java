@@ -72,4 +72,13 @@ public class StateDesc extends IdentifiedObject implements AnalysisDesc {
         sb.append('}');
         return sb.toString();
     }
+
+    public Value arg(String name) {
+        StateArgument argument = attributes.get(name);
+        if (argument == null) {
+            throw new IllegalArgumentException("no arg named " + String.valueOf(name));
+        }
+
+        return argument.getValue();
+    }
 }

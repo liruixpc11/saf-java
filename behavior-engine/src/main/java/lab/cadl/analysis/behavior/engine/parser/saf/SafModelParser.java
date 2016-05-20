@@ -123,7 +123,10 @@ public class SafModelParser implements ModelParser {
         String name = checkEntry(headers, "NAME");
         model.setQualifiedName(new QualifiedName(namespace, name));
 
-        model.setQualifier(checkEntry(headers, "QUALIFIER"));
+        String qualifierString = checkEntry(headers, "QUALIFIER");
+        try (InputStream inputStream = new ByteArrayInputStream(qualifierString.getBytes(StandardCharsets.UTF_8))) {
+            model.setQualifier(stateLineParser.parse(new QualifiedName(name, name + "_qualifier"), symbolTable, inputStream));
+        }
 
         String importString = headers.get("IMPORT");
         if (importString != null) {

@@ -5,6 +5,7 @@ package lab.cadl.analysis.behavior.engine.model;
  */
 public class IdentifiedObject {
     private QualifiedName qualifiedName;
+    private BehaviorModel model;
 
     public IdentifiedObject(QualifiedName qualifiedName) {
         this.qualifiedName = qualifiedName;
@@ -35,5 +36,13 @@ public class IdentifiedObject {
 
     public String getName() {
         return this.qualifiedName.getName();
+    }
+
+    public BehaviorModel getModel() {
+        return model;
+    }
+
+    public void setModel(BehaviorModel model) {
+        this.model = model;
     }
 }
