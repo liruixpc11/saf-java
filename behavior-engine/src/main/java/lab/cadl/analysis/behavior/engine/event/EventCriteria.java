@@ -1,5 +1,6 @@
 package lab.cadl.analysis.behavior.engine.event;
 
+import lab.cadl.analysis.behavior.engine.instance.StateInstance;
 import lab.cadl.analysis.behavior.engine.model.attribute.IndependentValue;
 import lab.cadl.analysis.behavior.engine.model.op.RelativeOp;
 
@@ -27,5 +28,9 @@ public class EventCriteria {
 
     public IndependentValue getValue() {
         return value;
+    }
+
+    public boolean ok(StateInstance instance) {
+        return false;
     }
 }

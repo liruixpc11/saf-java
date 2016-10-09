@@ -99,7 +99,7 @@ public class SqliteEventRepository implements EventRepository {
 
         if (assignmentList != null) {
             for (EventAssignment assignment : assignmentList) {
-                event.attr(assignment.getName(), rs.getObject(assignment.getPosition()));
+                event.attr(assignment.getName(), rs.getObject(assignment.getPosition() + 4));
             }
         }
 

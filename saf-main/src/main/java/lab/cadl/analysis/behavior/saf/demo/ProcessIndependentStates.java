@@ -23,11 +23,13 @@ public class ProcessIndependentStates {
         try (EventRepository repository = new SqliteEventRepository(Paths.get("data/sqlite/tcpudpdns_mix_20rec.sqlite").toString())) {
             RuleRepository ruleRepository = new FileRuleRepository(new File("behavior-engine/src/main/resources/lab/cadl/analysis/behavior/samples"));
             SafModelParser parser = new SafModelParser().setRuleRepository(ruleRepository);
-            BehaviorModel model = parser.parse("bscripts.codered");
+//            BehaviorModel model = parser.parse("bscripts.codered");
+            BehaviorModel model = parser.parse("net.base_proto.ippktpair");
 
             AnalysisInstanceRegistry instanceRegistry = new AnalysisInstanceRegistry();
             SqliteEventRepository eventRepository = new SqliteEventRepository("data/sqlite/codered.1.sqlite");
             StateProcessor stateProcessor = new StateProcessor(eventRepository, instanceRegistry);
+            stateProcessor.setDefaultEventType("PACKET_TCP");
 
             System.out.println("=======");
             for (StateDesc stateDesc : model.getStates()) {

@@ -40,7 +40,7 @@ public class StateDesc extends IdentifiedObject implements AnalysisDesc {
     }
 
     public boolean isDependent() {
-        return dependent;
+        return dependent || ref != null;
     }
 
     public StateRef getRef() {
@@ -80,5 +80,9 @@ public class StateDesc extends IdentifiedObject implements AnalysisDesc {
         }
 
         return argument.getValue();
+    }
+
+    public boolean hasArg(String name) {
+        return attributes.containsKey(name);
     }
 }

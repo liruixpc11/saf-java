@@ -31,7 +31,7 @@ QUALIFIER = {eventtype='PACKET_TCP'}
 IMPORT = NET.BASE_PROTO.IPPKTPAIR
 
 [states]
-tcp_pkt_sd = { IPPKTPAIR.ip_pkt_sd(sport=$3, dport=$4, protocol=6) }
+tcp_pkt_sd = { IPPKTPAIR.ip_pkt_sd(sport=$3, dport=$4, protocol=6, a=$1) }
 tcp_pkt_ds = { IPPKTPAIR.ip_pkt_ds($tcp_pkt_sd, sport=$tcp_pkt_sd.dport, dport=$tcp_pkt_sd.sport, protocol=6)  }
 
 [behavior]
