@@ -3,11 +3,16 @@ package lab.cadl.analysis.behavior.engine.model.behavior;
 /**
  *
  */
-public class NegationBehavior extends AbstractBehaviorNode {
+public class NegationBehaviorNode extends AbstractBehaviorNode {
     private BehaviorNode child;
 
-    public NegationBehavior(BehaviorNode child) {
+    public NegationBehaviorNode(BehaviorNode child) {
         this.child = child;
+    }
+
+    @Override
+    public <T> T accept(BehaviorNodeVisitor<T> visitor) {
+        return visitor.visit(this);
     }
 
     @Override

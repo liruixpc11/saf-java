@@ -23,6 +23,11 @@ public class RefBehaviorNode extends AbstractBehaviorNode {
     }
 
     @Override
+    public <T> T accept(BehaviorNodeVisitor<T> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
     public String toString() {
         if (!recursive && behavior.getRoot() != null) {
             return behavior.getRoot().toString();

@@ -121,7 +121,7 @@ public class BehaviorLineParser {
         @Override
         public BehaviorNode visitNegationBehavior(BehaviorParser.NegationBehaviorContext ctx) {
             logger.trace("negation behavior {}", ctx.getText());
-            return new NegationBehavior(visit(ctx.behavior()));
+            return new NegationBehaviorNode(visit(ctx.behavior()));
         }
 
         @Override

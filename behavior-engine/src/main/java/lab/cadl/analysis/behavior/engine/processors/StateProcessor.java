@@ -7,16 +7,20 @@ import lab.cadl.analysis.behavior.engine.event.EventRepository;
 import lab.cadl.analysis.behavior.engine.instance.AnalysisInstanceRegistry;
 import lab.cadl.analysis.behavior.engine.instance.StateInstance;
 import lab.cadl.analysis.behavior.engine.model.Constants;
-import lab.cadl.analysis.behavior.engine.model.attribute.*;
+import lab.cadl.analysis.behavior.engine.model.attribute.ArgumentValue;
+import lab.cadl.analysis.behavior.engine.model.attribute.DependentValue;
+import lab.cadl.analysis.behavior.engine.model.attribute.Value;
+import lab.cadl.analysis.behavior.engine.model.attribute.VariableValue;
 import lab.cadl.analysis.behavior.engine.model.state.StateDesc;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -64,7 +68,6 @@ public class StateProcessor {
         // query parameters
         List<EventAssignment> assignments = extractAssignments(desc);
         List<EventCriteria> criteriaList = extractIndependentCriteria(desc);
-        int independentLength = criteriaList.size();
 
         List<EventCriteria> dependentCriteriaList = extractDependentCriteria(desc);
 
@@ -110,31 +113,12 @@ public class StateProcessor {
                 .collect(Collectors.toList());
     }
 
-    @Nullable
-    private StateInstance convert(StateInstance instance, List<EventCriteria> criteriaList, List<EventAssignment> assignmentList) {
-        for (EventCriteria criteria : criteriaList) {
-            if (!criteria.ok(instance)) {
-                return null;
-            }
-        }
-
-        return null;
-    }
-
     private Set<StateDesc> extractDependee(StateDesc desc) {
         return desc.getArguments().values()
                 .stream()
                 .filter(argument -> argument.getValue() instanceof VariableValue)
                 .map(argument -> ((VariableValue) argument.getValue()).getDesc())
                 .collect(Collectors.toSet());
-    }
-
-    private List<DependentValue> extractDependentValues(StateDesc desc) {
-        return desc.getArguments().values()
-                .stream()
-                .filter(argument -> argument.getValue().isDependent())
-                .map(argument -> (DependentValue) argument.getValue())
-                .collect(Collectors.toList());
     }
 
     private List<EventCriteria> extractDependentCriteria(StateDesc desc) {

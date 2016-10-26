@@ -13,6 +13,11 @@ public class StateBehaviorNode extends AbstractBehaviorNode {
     }
 
     @Override
+    public <T> T accept(BehaviorNodeVisitor<T> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
     public String toString() {
         return state.getName();
     }

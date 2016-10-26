@@ -9,4 +9,6 @@ public interface BehaviorNode {
     BehaviorNode parent();
     List<BehaviorNode> children();
     BehaviorNode setParent(BehaviorNode parent);
+
+    <T> T accept(BehaviorNodeVisitor<T> visitor);
 }

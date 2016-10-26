@@ -17,6 +17,11 @@ public class LogicalBehaviorNode extends AbstractBehaviorNode {
     }
 
     @Override
+    public <T> T accept(BehaviorNodeVisitor<T> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
     public String toString() {
         return "(" + String.valueOf(left) + " " + op.getOp() + " " + String.valueOf(right) + ")";
     }

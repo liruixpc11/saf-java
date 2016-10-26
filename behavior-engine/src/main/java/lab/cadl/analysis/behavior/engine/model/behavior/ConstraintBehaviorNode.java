@@ -20,4 +20,9 @@ public class ConstraintBehaviorNode extends AbstractBehaviorNode {
     public String toString() {
         return "(" + child.toString() + ")" + String.valueOf(behaviorConstraint);
     }
+
+    @Override
+    public <T> T accept(BehaviorNodeVisitor<T> visitor) {
+        return visitor.visit(this);
+    }
 }

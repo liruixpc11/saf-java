@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -29,6 +30,7 @@ public class SqliteEventRepository implements EventRepository {
             EVENT_NUMBER, EVENT_TYPE, TIMESTAMP, TIMESTAMP_USEC, ORIGIN
     };
     private static final List<String> requiredColumnList = Arrays.asList(requiredColumns);
+    private ConcurrentHashMap<String, List<Event>> queryCache = new ConcurrentHashMap<>();
 
     private Connection connection;
 
@@ -47,6 +49,12 @@ public class SqliteEventRepository implements EventRepository {
     }
 
     private List<Event> executeQuery(String sql, List<EventAssignment> assignmentList) {
+        List<Event> events = queryCache.get(sql);
+        if (events != null) {
+            logger.debug("use sql cache for: {}", sql);
+            return queryCache.get(sql);
+        }
+
         try {
             Statement statement = connection.createStatement();
             try (ResultSet rs = statement.executeQuery(sql)) {
@@ -56,12 +64,13 @@ public class SqliteEventRepository implements EventRepository {
                 checkRequiredColumns(columns, requiredColumns);
                 columns.removeAll(requiredColumnList);
 
-                List<Event> events = new ArrayList<>();
+                events = new ArrayList<>();
                 while (rs.next()) {
                     Event event = parseEvent(rs, columns, assignmentList);
                     events.add(event);
                 }
 
+                queryCache.put(sql, events);
                 return events;
             }
         } catch (SQLException e) {

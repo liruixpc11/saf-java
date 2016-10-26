@@ -14,4 +14,9 @@ public class AlwaysBehaviorNode extends AbstractBehaviorNode {
     public String toString() {
         return "[]" + String.valueOf(child);
     }
+
+    @Override
+    public <T> T accept(BehaviorNodeVisitor<T> visitor) {
+        return visitor.visit(this);
+    }
 }

@@ -17,6 +17,11 @@ public class TimeBehaviorNode extends AbstractBehaviorNode {
     }
 
     @Override
+    public <T> T accept(BehaviorNodeVisitor<T> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
     public String toString() {
         return "(" + String.valueOf(left) + " " + timeOp.getOp() + " " + String.valueOf(right) + ")";
     }
