@@ -8,6 +8,6 @@ import java.io.InputStream;
  *
  */
 public interface ModelParser {
-    BehaviorModel parse(String path);
-    BehaviorModel parse(InputStream inputStream);
+    BehaviorModel parse(String qualifiedName);
+    BehaviorModel parse(InputStream inputStream, String qualifiedName);
 }

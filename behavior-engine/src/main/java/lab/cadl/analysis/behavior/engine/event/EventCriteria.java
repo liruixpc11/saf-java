@@ -2,6 +2,7 @@ package lab.cadl.analysis.behavior.engine.event;
 
 import lab.cadl.analysis.behavior.engine.instance.StateInstance;
 import lab.cadl.analysis.behavior.engine.model.attribute.IndependentValue;
+import lab.cadl.analysis.behavior.engine.model.attribute.Value;
 import lab.cadl.analysis.behavior.engine.model.op.RelativeOp;
 
 /**
@@ -10,9 +11,9 @@ import lab.cadl.analysis.behavior.engine.model.op.RelativeOp;
 public class EventCriteria {
     private String name;
     private RelativeOp op;
-    private IndependentValue value;
+    private Value value;
 
-    public EventCriteria(String name, RelativeOp op, IndependentValue value) {
+    public EventCriteria(String name, RelativeOp op, Value value) {
         this.name = name;
         this.op = op;
         this.value = value;
@@ -26,7 +27,7 @@ public class EventCriteria {
         return op;
     }
 
-    public IndependentValue getValue() {
+    public Value getValue() {
         return value;
     }
 

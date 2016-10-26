@@ -64,4 +64,8 @@ public class AnalysisInstanceRegistry {
     public List<StateInstance> query(StateDesc desc) {
         return stateMap.get(desc);
     }
+
+    public void register(StateDesc desc, List<StateInstance> instances) {
+        stateMap.put(desc, instances);
+    }
 }

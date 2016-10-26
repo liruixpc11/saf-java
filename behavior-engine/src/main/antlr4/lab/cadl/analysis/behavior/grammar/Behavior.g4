@@ -1,5 +1,6 @@
 grammar Behavior;
 
+
 // model output
 modelOutput: modelId '(' ID (',' ID)* ')'
         | modelId;
@@ -57,7 +58,7 @@ attributePair: ID RELATIVE_OP value;
 value: RANGE | STRING | FLOAT | INT | ID | variable | argument | WILDCARD;
 
 // variable
-importVariable: ID '.' ID;
+importVariable: ID ('.' ID)?;
 variable: '$' ID '.' ID;
 argument: '$' INT;
 

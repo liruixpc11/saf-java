@@ -33,10 +33,12 @@ public class BehaviorLineParser {
     private static class Visitor extends BehaviorBaseVisitor<BehaviorNode> {
         private final SymbolTable symbolTable;
         private final String namespace;
+        private final BehaviorDesc behavior;
 
-        public Visitor(SymbolTable symbolTable, String namespace) {
+        Visitor(SymbolTable symbolTable, String namespace, BehaviorDesc behavior) {
             this.symbolTable = symbolTable;
             this.namespace = namespace;
+            this.behavior = behavior;
         }
 
         @Override
@@ -54,7 +56,11 @@ public class BehaviorLineParser {
                 if (behavior == null) {
                     throw new EngineException("未找到名称为" + name + "的State或Behavior");
                 } else {
-                    return behavior.getRoot();
+                    // 这么做简化了遍历树结构的操作,但是不好处理递归
+                    // return behavior.getRoot();
+
+                    // 这种方式比较好地支持了递归操作,但是在遍历行为树的时候需要特殊处理一下
+                    return new RefBehaviorNode(behavior, behavior == this.behavior);
                 }
             } else {
                 return new StateBehaviorNode(state);
@@ -152,15 +158,18 @@ public class BehaviorLineParser {
         BehaviorParser parser = new BehaviorParser(new CommonTokenStream(lexer));
         parser.setErrorHandler(new ErrorStrategy());
 
-        Visitor visitor = new Visitor(symbolTable, qualifiedName.getNameSpace());
+        BehaviorDesc behavior = new BehaviorDesc(qualifiedName);
+        // 在这里加入符号表以支持递归
+        symbolTable.add(behavior);
+
+        Visitor visitor = new Visitor(symbolTable, qualifiedName.getNameSpace(), behavior);
         BehaviorNode root = visitor.visit(parser.behavior());
 
         if (root == null) {
             logger.warn("behavior {} is empty", qualifiedName);
             return null;
         } else {
-            BehaviorDesc behavior = new BehaviorDesc(qualifiedName, root);
-            symbolTable.add(behavior);
+            behavior.setRoot(root);
             return behavior;
         }
     }

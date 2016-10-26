@@ -5,6 +5,7 @@ import lab.cadl.analysis.behavior.engine.event.Event;
 import lab.cadl.analysis.behavior.engine.event.EventAssignment;
 import lab.cadl.analysis.behavior.engine.event.EventCriteria;
 import lab.cadl.analysis.behavior.engine.event.EventRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +24,7 @@ public class SqliteEventRepository implements EventRepository {
     private static final String TIMESTAMP = "timestamp";
     private static final String TIMESTAMP_USEC = "timestampusec";
     private static final String ORIGIN = "origin";
+    private static final String DEFAULT_DB = "events";
     private static final String[] requiredColumns = new String[]{
             EVENT_NUMBER, EVENT_TYPE, TIMESTAMP, TIMESTAMP_USEC, ORIGIN
     };
@@ -32,6 +34,11 @@ public class SqliteEventRepository implements EventRepository {
 
     public SqliteEventRepository(String dbPath) throws SQLException {
         connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
+    }
+
+    @Override
+    public List<Event> query(List<String> eventIds) {
+        return executeQuery(String.format("select * from %s where eventno in (%s)", DEFAULT_DB, StringUtils.join(eventIds, ", ")), null);
     }
 
     @Override

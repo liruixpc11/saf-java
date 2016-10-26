@@ -20,8 +20,8 @@ public class FileRuleRepository implements RuleRepository {
     }
 
     @Override
-    public InputStream open(String path) {
-        File behaviorFile = repositoryDir.toPath().resolve(path.replace(".", File.separator) + ".b").toFile();
+    public InputStream open(String qualifiedName) {
+        File behaviorFile = repositoryDir.toPath().resolve(qualifiedName.replace(".", File.separator) + ".b").toFile();
         if (!behaviorFile.isFile()) {
             throw new IllegalArgumentException("未找到规则文件：" + behaviorFile.toString());
         }

@@ -19,6 +19,14 @@ public class VariableValue extends DependentValue {
         this.attribute = attribute;
     }
 
+    public StateDesc getDesc() {
+        return desc;
+    }
+
+    public String getAttribute() {
+        return attribute;
+    }
+
     @Override
     public String toString() {
         return "$" + desc.getName() + "." + attribute;

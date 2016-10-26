@@ -23,14 +23,14 @@ import java.io.InputStream;
 /**
  *
  */
-public class StateLineParser {
+class StateLineParser {
     private static final Logger logger = LoggerFactory.getLogger(StateLineParser.class);
 
     private static class Listener extends BehaviorBaseListener {
         private SymbolTable symbolTable;
         private StateDesc desc;
 
-        public Listener(SymbolTable symbolTable, StateDesc desc) {
+        Listener(SymbolTable symbolTable, StateDesc desc) {
             this.symbolTable = symbolTable;
             this.desc = desc;
         }
@@ -56,8 +56,16 @@ public class StateLineParser {
 
         @Override
         public void enterImportState(BehaviorParser.ImportStateContext ctx) {
-            String namespace = ctx.importVariable().ID(0).getText();
-            String name = ctx.importVariable().ID(1).getText();
+            String namespace;
+            String name;
+
+            if (ctx.importVariable().ID().size() == 2) {
+                namespace = ctx.importVariable().ID(0).getText();
+                name = ctx.importVariable().ID(1).getText();
+            } else {
+                namespace = desc.getNameSpace();
+                name = ctx.importVariable().ID(0).getText();
+            }
 
             StateDesc refState = symbolTable.checkState(namespace, name);
             StateRef ref = new StateRef(refState);
@@ -79,12 +87,7 @@ public class StateLineParser {
                 String name = pairContext.ID().getText();
                 RelativeOp op = RelativeOp.parse(pairContext.RELATIVE_OP().getText());
                 Value value = parseValue(pairContext.value());
-
-                if (ref != null) {
-                    ref.put(name, op, value);
-                } else {
-                    desc.put(name, op, value);
-                }
+                desc.put(name, op, value);
             }
         }
 

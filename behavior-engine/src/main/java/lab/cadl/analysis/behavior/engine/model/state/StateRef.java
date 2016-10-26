@@ -13,7 +13,6 @@ public class StateRef {
 
     private StateDesc ref;
     private StateDesc context;
-    private Map<String, StateArgument> arguments = new HashMap<>();
 
     public StateRef(StateDesc ref) {
         this.ref = ref;
@@ -27,24 +26,14 @@ public class StateRef {
         return ref;
     }
 
-    public Map<String, StateArgument> getArguments() {
-        return arguments;
-    }
-
     public void setContext(StateDesc context) {
         this.context = context;
-    }
-
-    public StateRef put(String name, RelativeOp op, Value value) {
-        arguments.put(name, new StateArgument(name, op, value));
-        return this;
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("StateRef{");
         sb.append("ref=").append(ref.getId());
-        sb.append(", arguments=").append(arguments.values());
         sb.append('}');
         return sb.toString();
     }

@@ -40,7 +40,7 @@ public class StateDesc extends IdentifiedObject implements AnalysisDesc {
     }
 
     public boolean isDependent() {
-        return dependent || ref != null;
+        return dependent;
     }
 
     public StateRef getRef() {

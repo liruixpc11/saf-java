@@ -6,7 +6,9 @@ import lab.cadl.analysis.behavior.engine.model.state.StateDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -62,12 +64,16 @@ public class SymbolTable {
         return (BehaviorDesc) check(behaviorId(namespace, name));
     }
 
-    public BehaviorModel checkModel(String name) {
-        return (BehaviorModel) check(modelId(name));
+    public BehaviorModel checkModel(String namespace, String name) {
+        return (BehaviorModel) check(modelId(namespace, name));
     }
 
-    public static String modelId(String name) {
-        return "__model__" + name;
+    public static String modelId(String qualifiedName) {
+        return "__model__" + qualifiedName;
+    }
+
+    public static String modelId(String namespace, String name) {
+        return modelId(namespace + "." + name);
     }
 
     public static String stateId(String namespace, String name) {
@@ -87,7 +93,7 @@ public class SymbolTable {
     }
 
     public void add(BehaviorModel behaviorModel) {
-        put(modelId(behaviorModel.getName()), behaviorModel);
+        put(modelId(behaviorModel.getNameSpace(), behaviorModel.getName()), behaviorModel);
     }
 
     public void add(BehaviorDesc desc) {
@@ -102,11 +108,19 @@ public class SymbolTable {
         return (BehaviorDesc) query(behaviorId(namespace, name));
     }
 
-    public BehaviorModel queryModel(String name) {
-        return (BehaviorModel) query(modelId(name));
+    public BehaviorModel queryModel(String qualifiedName) {
+        return (BehaviorModel) query(modelId(qualifiedName));
+    }
+
+    public BehaviorModel queryModel(String namespace, String name) {
+        return (BehaviorModel) query(modelId(namespace, name));
     }
 
     public void add(OutputDesc outputDesc) {
         put(outputId(outputDesc.getNameSpace(), outputDesc.getName()), outputDesc);
+    }
+
+    public Collection<String> names() {
+        return symbolTable.keySet();
     }
 }

@@ -8,11 +8,13 @@ import lab.cadl.analysis.behavior.engine.model.state.StateDesc;
 import lab.cadl.analysis.behavior.engine.parser.FileRuleRepository;
 import lab.cadl.analysis.behavior.engine.parser.ModelParser;
 import lab.cadl.analysis.behavior.engine.parser.RuleRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.prefs.BackingStoreException;
 
@@ -47,34 +49,34 @@ public class SafModelParser implements ModelParser {
     }
 
     @Override
-    public BehaviorModel parse(String path) {
-        logger.debug("parsing model {}", path);
+    public BehaviorModel parse(String qualifiedName) {
+        logger.debug("parsing model {}", qualifiedName);
         try {
-            return parseImport(path);
+            return parseImport(qualifiedName);
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
 
     @Override
-    public BehaviorModel parse(InputStream inputStream) {
+    public BehaviorModel parse(InputStream inputStream, String qualifiedName) {
         try {
-            BehaviorModel model = new BehaviorModel(symbolTable);
+            BehaviorModel model = symbolTable.queryModel(qualifiedName);
+            if (model != null) {
+                return model;
+            }
+
+            model = new BehaviorModel(symbolTable);
             Ini ini = new Ini();
             ini.setAllowInterpolation(false);
             ini.setIgnoreCase(false);
             Map<String, Map<String, String>> sections = ini.read(new BufferedReader(new InputStreamReader(inputStream))).getSections();
             parseHeader(model, checkEntry(sections, HEADER_SECTION));
-            if (symbolTable.queryModel(model.getName()) == null) {
-                parseStates(model, checkEntry(sections, STATES_SECTION));
-                parseBehavior(model, checkEntry(sections, BEHAVIOR_SECTION));
-                parseOutput(model, checkEntry(sections, OUTPUT_SECTION));
-                symbolTable.add(model);
-                return model;
-            } else {
-                logger.info("模型" + model.getId() + "已经加载，不再重复加载");
-                return symbolTable.checkModel(model.getName());
-            }
+            parseStates(model, checkEntry(sections, STATES_SECTION));
+            parseBehavior(model, checkEntry(sections, BEHAVIOR_SECTION));
+            parseOutput(model, checkEntry(sections, OUTPUT_SECTION));
+            symbolTable.add(model);
+            return model;
 
         } catch (IOException | BackingStoreException e) {
             throw new RuntimeException(e.getMessage(), e);
@@ -87,7 +89,7 @@ public class SafModelParser implements ModelParser {
                 OutputDesc outputDesc = outputLineParser.parse(model.getName(), inputStream);
 
                 String behaviorString = outputs.get(header);
-                try (InputStream behaviorStream  = new ByteArrayInputStream(behaviorString.getBytes(StandardCharsets.UTF_8))) {
+                try (InputStream behaviorStream = new ByteArrayInputStream(behaviorString.getBytes(StandardCharsets.UTF_8))) {
                     BehaviorDesc behaviorDesc = behaviorLineParser.parse(outputDesc.getQualifiedName(), model.getSymbolTable(), behaviorStream);
                     outputDesc.setBehavior(behaviorDesc);
                 }
@@ -131,8 +133,9 @@ public class SafModelParser implements ModelParser {
         String importString = headers.get("IMPORT");
         if (importString != null) {
             for (String aImport : importString.split(",")) {
-                model.getImportStrings().add(aImport.trim());
-                parseImport(aImport);
+                String qualifiedModelName = aImport.trim();
+                model.getImportStrings().add(qualifiedModelName);
+                parseImport(qualifiedModelName);
             }
         }
     }
@@ -145,9 +148,9 @@ public class SafModelParser implements ModelParser {
         }
     }
 
-    private BehaviorModel parseImport(String path) throws IOException {
-        try (InputStream inputStream = ruleRepository.open(path)) {
-            return parse(inputStream);
+    private BehaviorModel parseImport(String qualifiedName) throws IOException {
+        try (InputStream inputStream = ruleRepository.open(qualifiedName)) {
+            return parse(inputStream, qualifiedName);
         }
     }
 

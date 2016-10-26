@@ -6,5 +6,5 @@ import java.io.InputStream;
  *
  */
 public interface RuleRepository {
-    InputStream open(String path);
+    InputStream open(String qualifiedName);
 }
