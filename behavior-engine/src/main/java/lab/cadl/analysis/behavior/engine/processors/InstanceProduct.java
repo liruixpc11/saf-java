@@ -1,18 +1,19 @@
 package lab.cadl.analysis.behavior.engine.processors;
 
+import lab.cadl.analysis.behavior.engine.instance.AnalysisInstance;
 import lab.cadl.analysis.behavior.engine.instance.StateInstance;
 
 import java.util.Arrays;
 import java.util.List;
 
-class StateProduct {
-    private List<List<StateInstance>> instancesListList;
+class InstanceProduct {
+    private List<List<AnalysisInstance>> instancesListList;
     private int[] lengthList;
     private int[] indices;
-    private StateInstance[] dependeeRecord;
+    private AnalysisInstance[] dependeeRecord;
     private boolean finished;
 
-    StateProduct(List<List<StateInstance>> instancesListList) {
+    InstanceProduct(List<List<AnalysisInstance>> instancesListList) {
         this.instancesListList = instancesListList;
         if (instancesListList.stream().anyMatch(List::isEmpty)) {
             // *optimization*
@@ -37,7 +38,7 @@ class StateProduct {
         dependeeRecord = new StateInstance[indices.length];
     }
 
-    StateInstance[] next() {
+    AnalysisInstance[] next() {
         if (finished) {
             return null;
         }

@@ -12,6 +12,14 @@ public class RangeValue extends IndependentValue {
         this.max = max;
     }
 
+    public long getMin() {
+        return min;
+    }
+
+    public long getMax() {
+        return max;
+    }
+
     @Override
     public String toString() {
         return min + ":" + max;

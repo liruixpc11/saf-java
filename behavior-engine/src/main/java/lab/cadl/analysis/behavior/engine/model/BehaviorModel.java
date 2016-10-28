@@ -1,8 +1,10 @@
 package lab.cadl.analysis.behavior.engine.model;
 
+import ca.szc.configparser.StringUtil;
 import lab.cadl.analysis.behavior.engine.model.behavior.BehaviorDesc;
 import lab.cadl.analysis.behavior.engine.model.output.OutputDesc;
 import lab.cadl.analysis.behavior.engine.model.state.StateDesc;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,10 +70,26 @@ public class BehaviorModel extends IdentifiedObject {
 
     @Override
     public String toString() {
-        return "BehaviorModel{" +
-                "nameSpace='" + getNameSpace() + '\'' +
-                ", name='" + getName() + '\'' +
-                ", qualifier='" + qualifier + '\'' +
-                '}';
+        String s = "[header]\n";
+        s += "NAMESPACE = " + getNameSpace() + "\n";
+        s += "NAME = " + getName() + "\n";
+        s += "QUALIFIER = " + getQualifier() + "\n";
+        if (!importStrings.isEmpty()) {
+            s += "IMPORT = " + StringUtils.join(importStrings, ", ") + "\n";
+        }
+        s += "\n";
+
+        s += "[states]\n";
+        s += StringUtils.join(states, "\n");
+        s += "\n\n";
+
+        s += "[behaviors]\n";
+        s += StringUtils.join(behaviors, "\n");
+        s += "\n\n";
+
+        s += "[model]\n";
+        s += StringUtils.join(outputs, "\n");
+        s += "\n";
+        return s;
     }
 }

@@ -21,16 +21,20 @@ public class OutputDesc extends IdentifiedObject {
         this.fields.addAll(fields);
     }
 
+    public List<String> getFields() {
+        return fields;
+    }
+
+    public BehaviorDesc getBehavior() {
+        return behavior;
+    }
+
     public void setBehavior(BehaviorDesc behavior) {
         this.behavior = behavior;
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("OutputDesc{");
-        sb.append("fields=").append(fields);
-        sb.append(", behavior=").append(behavior.getRoot());
-        sb.append('}');
-        return sb.toString();
+        return getName() + "(" + StringUtils.join(fields, ", ") + ") = " + behavior.getRoot();
     }
 }

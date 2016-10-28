@@ -10,6 +10,10 @@ public class NegationBehaviorNode extends AbstractBehaviorNode {
         this.child = child;
     }
 
+    public BehaviorNode getChild() {
+        return child;
+    }
+
     @Override
     public <T> T accept(BehaviorNodeVisitor<T> visitor) {
         return visitor.visit(this);

@@ -29,10 +29,6 @@ public class RefBehaviorNode extends AbstractBehaviorNode {
 
     @Override
     public String toString() {
-        if (!recursive && behavior.getRoot() != null) {
-            return behavior.getRoot().toString();
-        } else {
-            return behavior.getQualifiedName().toString();
-        }
+        return behavior.getQualifiedName().toString();
     }
 }

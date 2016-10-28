@@ -20,34 +20,30 @@ import java.util.List;
 /**
  *
  */
-public class ProcessStates {
-    public static void main(String[] args) throws SQLException {
-        try (EventRepository repository = new SqliteEventRepository(Paths.get("data/sqlite/tcpudpdns_mix_20rec.sqlite").toString())) {
-            RuleRepository ruleRepository = new FileRuleRepository(new File("behavior-engine/src/main/resources/lab/cadl/analysis/behavior/samples"));
-            SafModelParser parser = new SafModelParser().setRuleRepository(ruleRepository);
-//            BehaviorModel model = parser.parse("bscripts.codered");
-            BehaviorModel model = parser.parse("net.app_proto.httpdemo");
+public class ProcessStates extends DemoProcessor {
+    public static void main(String[] args) {
+        new ProcessStates().run();
+    }
 
-            AnalysisInstanceRegistry instanceRegistry = new AnalysisInstanceRegistry();
-            SqliteEventRepository eventRepository = new SqliteEventRepository("data/sqlite/httpflows_1077rec.sqlite");
-            StateProcessor stateProcessor = new StateProcessor(eventRepository, instanceRegistry);
-            stateProcessor.setDefaultEventType("PACKET_TCP");
+    @Override
+    protected String dbPath() {
+        return super.dbPath();
+    }
 
-            for (StateDesc stateDesc : model.getStates()) {
-                System.out.println("=======");
-                System.out.println("processing state " + stateDesc);
-                List<StateInstance> states = stateProcessor.process(stateDesc);
-//                for (AnalysisInstance instance : states) {
-//                    System.out.println(instance);
-//                }
-                if (!states.isEmpty()) {
-                    StateInstance instance = states.get(0);
-                    System.out.println(instance);
-                }
-
-                System.out.println("++");
-                System.out.println("total events: " + states.size());
+    @Override
+    protected void process() {
+        BehaviorModel model = parser.parse("net.app_proto.httpdemo");
+        for (StateDesc stateDesc : model.getStates()) {
+            System.out.println("=======");
+            System.out.println("processing state " + stateDesc);
+            List<AnalysisInstance> states = stateProcessor.process(stateDesc);
+            if (!states.isEmpty()) {
+                AnalysisInstance instance = states.get(0);
+                System.out.println(instance);
             }
+
+            System.out.println("++");
+            System.out.println("total events: " + states.size());
         }
     }
 }

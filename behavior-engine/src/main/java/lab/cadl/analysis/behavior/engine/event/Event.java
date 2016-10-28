@@ -51,7 +51,20 @@ public class Event {
     }
 
     public Object attr(String name) {
-        return attributes.get(name);
+        switch (name) {
+            case "eventno":
+                return eventNumber;
+            case "timestamp":
+                return timestamp.getEpochSecond();
+            case "timestampusec":
+                return timestamp.getNano() / 1000;
+            case "origin":
+                return origin;
+            case "type":
+                return type;
+            default:
+                return attributes.get(name);
+        }
     }
 
     public Object attr(int index) {

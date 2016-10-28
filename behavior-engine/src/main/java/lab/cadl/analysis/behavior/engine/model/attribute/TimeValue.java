@@ -1,11 +1,13 @@
 package lab.cadl.analysis.behavior.engine.model.attribute;
 
+import lab.cadl.analysis.behavior.engine.utils.TimeUtils;
+
 import java.time.Instant;
 
 /**
  *
  */
-public class TimeValue extends IndependentValue {
+public class TimeValue extends TemporalValue {
     private Instant instant;
 
     public TimeValue(long milliSeconds) {
@@ -14,6 +16,14 @@ public class TimeValue extends IndependentValue {
 
     public TimeValue(Instant instant) {
         this.instant = instant;
+    }
+
+    public Instant getInstant() {
+        return instant;
+    }
+
+    public long nanos() {
+        return TimeUtils.nanos(instant);
     }
 
     @Override

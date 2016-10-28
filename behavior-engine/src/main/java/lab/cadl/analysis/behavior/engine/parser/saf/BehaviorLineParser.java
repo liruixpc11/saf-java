@@ -5,10 +5,7 @@ import lab.cadl.analysis.behavior.engine.model.attribute.*;
 import lab.cadl.analysis.behavior.engine.model.behavior.*;
 import lab.cadl.analysis.behavior.engine.model.QualifiedName;
 import lab.cadl.analysis.behavior.engine.model.SymbolTable;
-import lab.cadl.analysis.behavior.engine.model.constraint.CountConstraint;
-import lab.cadl.analysis.behavior.engine.model.constraint.CountConstraintType;
-import lab.cadl.analysis.behavior.engine.model.constraint.TimeConstraint;
-import lab.cadl.analysis.behavior.engine.model.constraint.TimeConstraintType;
+import lab.cadl.analysis.behavior.engine.model.constraint.*;
 import lab.cadl.analysis.behavior.engine.model.op.LogicalOp;
 import lab.cadl.analysis.behavior.engine.model.op.RelativeOp;
 import lab.cadl.analysis.behavior.engine.model.op.TimeOp;
@@ -18,11 +15,15 @@ import lab.cadl.analysis.behavior.grammar.BehaviorLexer;
 import lab.cadl.analysis.behavior.grammar.BehaviorParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -82,7 +83,7 @@ public class BehaviorLineParser {
                     RelativeOp op = RelativeOp.parse(countCtx.RELATIVE_OP().getText());
                     if (countCtx.INT().size() == 1) {
                         long count = Long.parseLong(countCtx.INT(0).getText());
-                        return new ConstraintBehaviorNode(child, new CountConstraint(type, op, new PrimeValue<>(count)));
+                        return new ConstraintBehaviorNode(child, new CountConstraint(type, op, new LongValue(count)));
                     } else {
                         long begin = Long.parseLong(countCtx.INT(0).getText());
                         long end = Long.parseLong(countCtx.INT(1).getText());
@@ -92,29 +93,40 @@ public class BehaviorLineParser {
                     BehaviorParser.TimeConstraintContext timeCtx = ctx.behaviorConstraint().timeConstraint();
                     TimeConstraintType type = TimeConstraintType.parse(timeCtx.TIME_POSITION().getText());
                     RelativeOp op = RelativeOp.parse(timeCtx.RELATIVE_OP().getText());
-                    if (timeCtx.time().size() == 1) {
-                        DurationValue time = parseTime(timeCtx.time(0));
-                        return new ConstraintBehaviorNode(child, new TimeConstraint(type, op, time));
-                    } else {
-                        DurationValue begin = parseTime(timeCtx.time(0));
-                        DurationValue end = parseTime(timeCtx.time(1));
-                        return new ConstraintBehaviorNode(child, new TimeConstraint(type, op, new DurationRangeValue(begin, end)));
-                    }
+                    return new ConstraintBehaviorNode(child, new TimeConstraint(type, op, parseTime(timeCtx.TIME())));
                 } else {
                     throw new EngineException("未知约束类型：" + ctx.behaviorConstraint().getText());
                 }
             }
         }
 
-        private DurationValue parseTime(BehaviorParser.TimeContext ctx) {
-            long value = Long.parseLong(ctx.INT().getText());
-            String unit = ctx.TIME_UNIT().getText().toLowerCase();
-            if (unit.startsWith("m")) {
-                return DurationValue.fromMs(value);
-            } else if (unit.startsWith("s")) {
-                return DurationValue.fromMs(value * 1000);
+        private TemporalValue parseTime(List<TerminalNode> contexts) {
+            if (contexts.size() == 1) {
+                return parseTime(contexts.get(0));
             } else {
-                throw new EngineException("未知时间单位：" + unit);
+                DurationValue begin = parseTime(contexts.get(0));
+                DurationValue end = parseTime(contexts.get(1));
+                return new DurationRangeValue(begin, end);
+            }
+        }
+
+        private DurationValue parseTime(TerminalNode node) {
+            Pattern pattern = Pattern.compile("(\\d+)([a-zA-Z_]+)");
+            Matcher matcher = pattern.matcher(node.getText());
+            if (matcher.matches()) {
+                long value = Long.parseLong(matcher.group(1));
+                String unit = matcher.group(2).toLowerCase();
+                if (unit.startsWith("m")) {
+                    return DurationValue.fromMs(value);
+                } else if (unit.startsWith("s")) {
+                    return DurationValue.fromMs(value * 1000);
+                } else if (unit.startsWith("u")) {
+                    return DurationValue.fromUs(value);
+                } else {
+                    throw new EngineException("未知时间单位：" + unit);
+                }
+            } else {
+                throw new IllegalArgumentException("非法时间格式: " + node.getText());
             }
         }
 
@@ -144,11 +156,20 @@ public class BehaviorLineParser {
         @Override
         public BehaviorNode visitTimeBehavior(BehaviorParser.TimeBehaviorContext ctx) {
             logger.trace("time behavior {}", ctx.getText());
-
             BehaviorNode left = visit(ctx.behavior(0));
             BehaviorNode right = visit(ctx.behavior(1));
             TimeOp op = TimeOp.parse(ctx.constrainnTimeOp().TIME_OP().getText());
-            return new TimeBehaviorNode(left, op, right);
+
+            BehaviorParser.OperationConstraintContext constraintCtx = ctx.constrainnTimeOp().operationConstraint();
+            if (constraintCtx == null) {
+                return new TimeBehaviorNode(left, op, right);
+            } else {
+                TimeOpConstraint constraint = new TimeOpConstraint(
+                        RelativeOp.parse(constraintCtx.RELATIVE_OP().getText()),
+                        parseTime(constraintCtx.TIME())
+                );
+                return new TimeBehaviorNode(left, op, right, constraint);
+            }
         }
     }
 

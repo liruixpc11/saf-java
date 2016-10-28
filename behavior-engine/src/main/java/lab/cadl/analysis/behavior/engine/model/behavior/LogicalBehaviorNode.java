@@ -16,6 +16,18 @@ public class LogicalBehaviorNode extends AbstractBehaviorNode {
         this.right = right;
     }
 
+    public BehaviorNode getLeft() {
+        return left;
+    }
+
+    public LogicalOp getOp() {
+        return op;
+    }
+
+    public BehaviorNode getRight() {
+        return right;
+    }
+
     @Override
     public <T> T accept(BehaviorNodeVisitor<T> visitor) {
         return visitor.visit(this);

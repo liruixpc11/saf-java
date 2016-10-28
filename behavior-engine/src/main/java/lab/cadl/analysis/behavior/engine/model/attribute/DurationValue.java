@@ -3,7 +3,7 @@ package lab.cadl.analysis.behavior.engine.model.attribute;
 /**
  *
  */
-public class DurationValue extends IndependentValue {
+public class DurationValue extends TemporalValue {
     private long seconds;
     private long us;
 
@@ -16,6 +16,14 @@ public class DurationValue extends IndependentValue {
         return new DurationValue(ms / 1000, (ms % 1000) * 1000);
     }
 
+    public long nano() {
+        return seconds * 1000_000_000 + us * 1000;
+    }
+
+    public long millis() {
+        return seconds * 1000_000 + us;
+    }
+
     @Override
     public String toString() {
         if (us == 0) {
@@ -25,5 +33,9 @@ public class DurationValue extends IndependentValue {
         } else {
             return (seconds * 1000_000 + us) + "us";
         }
+    }
+
+    public static DurationValue fromUs(long us) {
+        return new DurationValue(us / 1000_000, us % 1000_000);
     }
 }

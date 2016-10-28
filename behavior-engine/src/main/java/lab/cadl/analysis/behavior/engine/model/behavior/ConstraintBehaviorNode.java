@@ -16,6 +16,14 @@ public class ConstraintBehaviorNode extends AbstractBehaviorNode {
         this.behaviorConstraint = behaviorConstraint;
     }
 
+    public BehaviorNode getChild() {
+        return child;
+    }
+
+    public BehaviorConstraint getBehaviorConstraint() {
+        return behaviorConstraint;
+    }
+
     @Override
     public String toString() {
         return "(" + child.toString() + ")" + String.valueOf(behaviorConstraint);

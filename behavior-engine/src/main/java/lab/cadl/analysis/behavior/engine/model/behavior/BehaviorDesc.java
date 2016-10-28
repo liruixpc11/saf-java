@@ -1,7 +1,5 @@
 package lab.cadl.analysis.behavior.engine.model.behavior;
 
-import com.sun.org.apache.regexp.internal.RE;
-import lab.cadl.analysis.behavior.engine.instance.BehaviorInstance;
 import lab.cadl.analysis.behavior.engine.model.AnalysisDesc;
 import lab.cadl.analysis.behavior.engine.model.IdentifiedObject;
 import lab.cadl.analysis.behavior.engine.model.QualifiedName;
@@ -70,10 +68,6 @@ public class BehaviorDesc extends IdentifiedObject implements AnalysisDesc {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("BehaviorDesc");
-        sb.append("[").append(getId()).append("]{");
-        sb.append("root=").append(root);
-        sb.append('}');
-        return sb.toString();
+        return getName() + " = " + root;
     }
 }

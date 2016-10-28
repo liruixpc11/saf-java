@@ -6,6 +6,7 @@ import lab.cadl.analysis.behavior.engine.model.IdentifiedObject;
 import lab.cadl.analysis.behavior.engine.model.QualifiedName;
 import lab.cadl.analysis.behavior.engine.model.attribute.Value;
 import lab.cadl.analysis.behavior.engine.model.op.RelativeOp;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -64,13 +65,24 @@ public class StateDesc extends IdentifiedObject implements AnalysisDesc {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("StateDesc");
-        sb.append("[").append(getId()).append("]{");
-        sb.append("attributes=").append(attributes.values());
-        sb.append(", constraint=").append(constraint);
-        sb.append(", ref=").append(ref);
-        sb.append('}');
-        return sb.toString();
+        String s = getName() + " = {";
+        if (ref != null) {
+            if (ref.getRef().getNameSpace().equals(getNameSpace())) {
+                s += ref.getRef().getName();
+            } else {
+                s += ref.getRef().getQualifiedName().toString();
+            }
+
+            s += "(";
+        }
+
+        s += StringUtils.join(attributes.values(), ", ");
+
+        if (ref != null) {
+            s += ")";
+        }
+        s += "}";
+        return s;
     }
 
     public Value arg(String name) {

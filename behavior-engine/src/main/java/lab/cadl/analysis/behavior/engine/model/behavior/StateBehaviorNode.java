@@ -12,6 +12,10 @@ public class StateBehaviorNode extends AbstractBehaviorNode {
         this.state = state;
     }
 
+    public StateDesc getState() {
+        return state;
+    }
+
     @Override
     public <T> T accept(BehaviorNodeVisitor<T> visitor) {
         return visitor.visit(this);

@@ -4,6 +4,7 @@ import lab.cadl.analysis.behavior.engine.event.Event;
 import lab.cadl.analysis.behavior.engine.event.EventAssignment;
 import lab.cadl.analysis.behavior.engine.event.EventCriteria;
 import lab.cadl.analysis.behavior.engine.event.EventRepository;
+import lab.cadl.analysis.behavior.engine.instance.AnalysisInstance;
 import lab.cadl.analysis.behavior.engine.instance.AnalysisInstanceRegistry;
 import lab.cadl.analysis.behavior.engine.instance.StateInstance;
 import lab.cadl.analysis.behavior.engine.model.Constants;
@@ -42,8 +43,8 @@ public class StateProcessor {
         this.defaultEventType = defaultEventType;
     }
 
-    public List<StateInstance> process(StateDesc desc) {
-        List<StateInstance> instances = instanceRegistry.query(desc);
+    public List<AnalysisInstance> process(StateDesc desc) {
+        List<AnalysisInstance> instances = instanceRegistry.query(desc);
         if (instances != null) {
             logger.debug("use instances of {} in cache", desc.getQualifiedName());
             return instances;
@@ -57,13 +58,13 @@ public class StateProcessor {
     }
 
     @NotNull
-    private List<StateInstance> processDependent(@NotNull StateDesc desc) {
+    private List<AnalysisInstance> processDependent(@NotNull StateDesc desc) {
         // instances dependent
         List<StateDesc> dependeeList = new ArrayList<>(extractDependee(desc));
-        List<List<StateInstance>> instancesListList = dependeeList.stream()
+        List<List<AnalysisInstance>> instancesListList = dependeeList.stream()
                 .map(this::process)
                 .collect(Collectors.toList());
-        StateProduct product = new StateProduct(instancesListList);
+        InstanceProduct product = new InstanceProduct(instancesListList);
 
         // query parameters
         List<EventAssignment> assignments = extractAssignments(desc);
@@ -73,13 +74,13 @@ public class StateProcessor {
 
         // traverse
         String eventType = eventType(desc);
-        List<StateInstance> instances = new ArrayList<>();
-        StateInstance[] dependeeRecord;
+        List<AnalysisInstance> instances = new ArrayList<>();
+        AnalysisInstance[] dependeeRecord;
         while ((dependeeRecord = product.next()) != null) {
             List<EventCriteria> resolvedCriteria = resolve(dependentCriteriaList, dependeeRecord, dependeeList);
             criteriaList.addAll(resolvedCriteria);
 
-            List<Pair<DependentValue, StateInstance>> dependencies = new ArrayList<>();
+            List<Pair<DependentValue, AnalysisInstance>> dependencies = new ArrayList<>();
             for (EventCriteria criteria : dependentCriteriaList) {
                 VariableValue variable = (VariableValue) criteria.getValue();
                 dependencies.add(new ImmutablePair<>(variable, dependeeRecord[dependeeList.indexOf(variable.getDesc())]));
@@ -87,8 +88,8 @@ public class StateProcessor {
 
             for (Event event : eventRepository.query(eventType, criteriaList, assignments)) {
                 StateInstance instance = new StateInstance(event, desc);
-                for (Pair<DependentValue, StateInstance> pair : dependencies) {
-                    instance.addRef(pair.getLeft(), pair.getRight());
+                for (Pair<DependentValue, AnalysisInstance> pair : dependencies) {
+                    instance.addRef(pair.getLeft(), (StateInstance) pair.getRight());
                 }
 
                 instances.add(instance);
@@ -101,12 +102,12 @@ public class StateProcessor {
         return instances;
     }
 
-    private List<EventCriteria> resolve(List<EventCriteria> dependentCriteriaList, StateInstance[] dependeeRecord, List<StateDesc> dependeeList) {
+    private List<EventCriteria> resolve(List<EventCriteria> dependentCriteriaList, AnalysisInstance[] dependeeRecord, List<StateDesc> dependeeList) {
         return dependentCriteriaList.stream()
                 .map(c -> {
                     VariableValue variable = (VariableValue) c.getValue();
                     int index = dependeeList.indexOf(variable.getDesc());
-                    Value value = dependeeRecord[index].resolve(variable.getAttribute());
+                    Value value = ((StateInstance) dependeeRecord[index]).resolve(variable.getAttribute());
 
                     return new EventCriteria(c.getName(), c.getOp(), value);
                 })
@@ -161,11 +162,11 @@ public class StateProcessor {
     }
 
     @NotNull
-    private List<StateInstance> processIndependent(@NotNull StateDesc desc) {
+    private List<AnalysisInstance> processIndependent(@NotNull StateDesc desc) {
         List<EventCriteria> criteriaList = extractIndependentCriteria(desc);
         List<EventAssignment> assignmentList = extractAssignments(desc);
         String eventType = eventType(desc);
-        List<StateInstance> states = eventRepository.query(eventType, criteriaList, assignmentList).stream()
+        List<AnalysisInstance> states = eventRepository.query(eventType, criteriaList, assignmentList).stream()
                 .map(e -> new StateInstance(e, desc))
                 .collect(Collectors.toList());
         instanceRegistry.register(desc, states);

@@ -19,12 +19,14 @@ public class StateInstance implements AnalysisInstance<StateDesc> {
     private Event event;
     private StateDesc desc;
     private Map<DependentValue, StateInstance> refMap;
+    private List<StateInstance> dependeeList;
 
     public StateInstance(Event event, StateDesc desc) {
         this.event = event;
         this.desc = desc;
         if (this.desc.isDependent()) {
             refMap = new HashMap<>();
+            dependeeList = new ArrayList<>();
         }
     }
 
@@ -51,6 +53,7 @@ public class StateInstance implements AnalysisInstance<StateDesc> {
     public void addRef(DependentValue value, StateInstance instance) {
         assert desc.isDependent();
         refMap.put(value, instance);
+        dependeeList.add(instance);
     }
 
     public Map<DependentValue, StateInstance> getRefMap() {
@@ -64,14 +67,16 @@ public class StateInstance implements AnalysisInstance<StateDesc> {
 
     @Override
     public String toString() {
-        String s = desc.getId() + "->" + event.toString();
-        if (refMap != null) {
-            for (StateInstance dependee : refMap.values().stream().distinct().collect(Collectors.toList())) {
-                s += "\n  " + dependee;
-            }
-        }
+        return desc.getId() + "->" + event.toString();
+    }
 
-        return s;
+    @Override
+    public boolean isDependent() {
+        return desc.isDependent();
+    }
+
+    public List<StateInstance> dependeeList() {
+        return dependeeList;
     }
 
     public IndependentValue resolve(String attribute) {

@@ -11,8 +11,9 @@ http_res = {sport=80, dport=$http_req.sport}
 # dns_res = {UDPPKTPAIR.udp_pkt_ds($dns_req, dnsid=$dns_req.dnsid, dnsquesname=$dns_req.dnsquesname, dnsqrflag=1, sport=53)}
 
 [behavior]
-# b = dns_req ~> dns_res
-b = http_req ~> http_res
+a1 = http_req ~>[>10s] http_res
+a2 = http_req ~>[<10us] http_res
+b = a1 ~> a2
 
 [model]
 # DNS_REQ_RES(eventno, timestamp, timestampusec, sipaddr,dipaddr,sport,dport,dnsquesname,dnsid,dnsqrflag) =  b

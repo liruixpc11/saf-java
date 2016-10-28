@@ -58,7 +58,6 @@ public class SqliteEventRepository implements EventRepository {
         try {
             Statement statement = connection.createStatement();
             try (ResultSet rs = statement.executeQuery(sql)) {
-                logger.debug("query result count {}", rs.getFetchSize());
 
                 List<String> columns = queryColumnNames(rs);
                 checkRequiredColumns(columns, requiredColumns);
@@ -71,6 +70,7 @@ public class SqliteEventRepository implements EventRepository {
                 }
 
                 queryCache.put(sql, events);
+                logger.debug("query result count {}", events.size());
                 return events;
             }
         } catch (SQLException e) {

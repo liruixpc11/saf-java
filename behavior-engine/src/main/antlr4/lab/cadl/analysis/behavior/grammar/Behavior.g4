@@ -21,13 +21,14 @@ constraintAlwaysTimeOp: ALWAYS_TIME_OP operationConstraint?;
 
 LOGICAL_OP: 'and' | 'or' | 'xor';
 ALWAYS_TIME_OP: '[]';
-TIME_OP:  '~>' | '[]' | 'olap' | 'dur' | 'sw' | 'ew' | 'eq';
+TIME_OP:  '~>' | 'olap' | 'dur' | 'sw' | 'ew' | 'eq';
 
 behaviorConstraint: '[' (timeConstraint | countConstraint) ']';
-operationConstraint: '[' RELATIVE_OP time (':' time)? ']';
+operationConstraint: '[' RELATIVE_OP TIME (':' TIME)? ']';
 
-timeConstraint: TIME_POSITION RELATIVE_OP time (':' time)?;
-time: INT TIME_UNIT;
+// TODO 区分持续时间和时间点
+timeConstraint: TIME_POSITION RELATIVE_OP TIME (':' TIME)?;
+TIME: INT TIME_UNIT;
 TIME_POSITION: 'at' | 'duration' | 'end';
 
 countConstraint: COUNT_TYPE RELATIVE_OP INT (':' INT)?;
@@ -66,7 +67,7 @@ argument: '$' INT;
 RELATIVE_OP: '>=' | '<=' | '>' | '<' | '!=' | '=';
 NEGATION: 'not';
 
-TIME_UNIT: 'SECS' | 'MSECS' | 'secs' | 'msecs' | 'SEC' | 'MSEC' | 'sec' | 'msec' | 's' | 'ms' | 'S' | 'MS';
+TIME_UNIT: 'SECS' | 'MSECS' | 'secs' | 'msecs' | 'SEC' | 'MSEC' | 'sec' | 'msec' | 's' | 'ms' | 'S' | 'MS' | 'us' | 'US';
 
 // constraint key
 stateConstraintType: '_eventno' | '_limit' | COUNT_TYPE;

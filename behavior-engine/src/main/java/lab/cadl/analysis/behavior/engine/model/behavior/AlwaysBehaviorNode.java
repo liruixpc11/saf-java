@@ -10,6 +10,10 @@ public class AlwaysBehaviorNode extends AbstractBehaviorNode {
         this.child = child;
     }
 
+    public BehaviorNode getChild() {
+        return child;
+    }
+
     @Override
     public String toString() {
         return "[]" + String.valueOf(child);
