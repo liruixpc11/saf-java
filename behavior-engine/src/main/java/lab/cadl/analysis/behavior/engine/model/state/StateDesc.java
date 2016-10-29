@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -34,6 +35,8 @@ public class StateDesc extends IdentifiedObject implements AnalysisDesc {
         if (value.isDependent()) {
             this.dependent = true;
         }
+
+
     }
 
     public boolean isPrime() {
@@ -96,5 +99,18 @@ public class StateDesc extends IdentifiedObject implements AnalysisDesc {
 
     public boolean hasArg(String name) {
         return attributes.containsKey(name);
+    }
+
+    public boolean is(StateDesc desc) {
+        StateDesc current = this;
+        while (current != null) {
+            if (current == desc) {
+                return true;
+            } else {
+                current = current.getRef() == null ? null : current.getRef().getRef();
+            }
+        }
+
+        return false;
     }
 }

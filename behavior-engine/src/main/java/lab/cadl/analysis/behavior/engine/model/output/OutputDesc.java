@@ -18,6 +18,7 @@ public class OutputDesc extends IdentifiedObject {
 
     public OutputDesc(QualifiedName qualifiedName, Collection<String> fields) {
         super(qualifiedName);
+        this.fields.add("eventno");
         this.fields.addAll(fields);
     }
 

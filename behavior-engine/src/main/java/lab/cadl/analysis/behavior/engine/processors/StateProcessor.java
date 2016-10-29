@@ -1,9 +1,11 @@
 package lab.cadl.analysis.behavior.engine.processors;
 
+import com.sun.deploy.util.ArrayUtil;
 import lab.cadl.analysis.behavior.engine.event.Event;
 import lab.cadl.analysis.behavior.engine.event.EventAssignment;
 import lab.cadl.analysis.behavior.engine.event.EventCriteria;
 import lab.cadl.analysis.behavior.engine.event.EventRepository;
+import lab.cadl.analysis.behavior.engine.exception.EngineException;
 import lab.cadl.analysis.behavior.engine.instance.AnalysisInstance;
 import lab.cadl.analysis.behavior.engine.instance.AnalysisInstanceRegistry;
 import lab.cadl.analysis.behavior.engine.instance.StateInstance;
@@ -13,15 +15,14 @@ import lab.cadl.analysis.behavior.engine.model.attribute.DependentValue;
 import lab.cadl.analysis.behavior.engine.model.attribute.Value;
 import lab.cadl.analysis.behavior.engine.model.attribute.VariableValue;
 import lab.cadl.analysis.behavior.engine.model.state.StateDesc;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -50,11 +51,12 @@ public class StateProcessor {
             return instances;
         }
 
-        if (desc.isDependent()) {
-            return processDependent(desc);
-        } else {
-            return processIndependent(desc);
-        }
+        instances = desc.isDependent() ? processDependent(desc) : processIndependent(desc);
+        logger.info("state {} found {} instances",
+                desc.getQualifiedName(),
+                instances.size()
+        );
+        return instances;
     }
 
     @NotNull
@@ -74,16 +76,20 @@ public class StateProcessor {
 
         // traverse
         String eventType = eventType(desc);
-        List<AnalysisInstance> instances = new ArrayList<>();
+        Set<AnalysisInstance> instanceSet = new HashSet<>();
         AnalysisInstance[] dependeeRecord;
         while ((dependeeRecord = product.next()) != null) {
+            if (Arrays.stream(dependeeRecord).allMatch(instanceSet::contains)) {
+                continue;
+            }
+
             List<EventCriteria> resolvedCriteria = resolve(dependentCriteriaList, dependeeRecord, dependeeList);
             criteriaList.addAll(resolvedCriteria);
 
             List<Pair<DependentValue, AnalysisInstance>> dependencies = new ArrayList<>();
             for (EventCriteria criteria : dependentCriteriaList) {
                 VariableValue variable = (VariableValue) criteria.getValue();
-                dependencies.add(new ImmutablePair<>(variable, dependeeRecord[dependeeList.indexOf(variable.getDesc())]));
+                dependencies.add(new ImmutablePair<>(variable, dependeeRecord[indexOf(dependeeList, variable.getDesc())]));
             }
 
             for (Event event : eventRepository.query(eventType, criteriaList, assignments)) {
@@ -92,23 +98,60 @@ public class StateProcessor {
                     instance.addRef(pair.getLeft(), (StateInstance) pair.getRight());
                 }
 
-                instances.add(instance);
+                instanceSet.add(instance);
             }
 
             criteriaList.removeAll(resolvedCriteria);
         }
 
+        List<AnalysisInstance> instances = new ArrayList<>(instanceSet);
         instanceRegistry.register(desc, instances);
         return instances;
+    }
+
+    private long[] aggregateEventNumbers(AnalysisInstance[] instances) {
+        long[] eventNumbers = new long[instances.length];
+        for (int i = 0; i < eventNumbers.length; i++) {
+            eventNumbers[i] = ((StateInstance) instances[i]).getEvent().getEventNumber();
+        }
+
+        return eventNumbers;
+    }
+
+    private long[] aggregateEventNumbers(List<List<AnalysisInstance>> instancesListList) {
+        Set<AnalysisInstance> dependencies = new HashSet<>();
+        instancesListList.forEach(dependencies::addAll);
+        long[] eventNumbers = new long[dependencies.size()];
+        int i = 0;
+        for (AnalysisInstance instance : dependencies) {
+            eventNumbers[i] = ((StateInstance) instance).getEvent().getEventNumber();
+            i++;
+        }
+
+        Arrays.sort(eventNumbers);
+        return eventNumbers;
+    }
+
+    private int indexOf(List<StateDesc> dependeeList, StateDesc desc) {
+        int index = 0;
+        for (; index < dependeeList.size(); index++) {
+            if (dependeeList.get(index).is(desc)) {
+                break;
+            }
+        }
+
+        if (index == dependeeList.size()) {
+            throw new EngineException("未找到依赖的StateDesc: " + desc);
+        }
+
+        return index;
     }
 
     private List<EventCriteria> resolve(List<EventCriteria> dependentCriteriaList, AnalysisInstance[] dependeeRecord, List<StateDesc> dependeeList) {
         return dependentCriteriaList.stream()
                 .map(c -> {
                     VariableValue variable = (VariableValue) c.getValue();
-                    int index = dependeeList.indexOf(variable.getDesc());
-                    Value value = ((StateInstance) dependeeRecord[index]).resolve(variable.getAttribute());
-
+                    Value value = ((StateInstance) dependeeRecord[indexOf(dependeeList, variable.getDesc())]).resolve(variable.getAttribute());
                     return new EventCriteria(c.getName(), c.getOp(), value);
                 })
                 .collect(Collectors.toList());
@@ -123,11 +166,12 @@ public class StateProcessor {
     }
 
     private List<EventCriteria> extractDependentCriteria(StateDesc desc) {
+        final Set<String> overwrites = new HashSet<>();
         List<EventCriteria> criteriaList = new ArrayList<>();
-        for (; desc != null; desc = desc.getRef() == null ? null : desc.getRef().getRef()) {
+        for (; desc != null; overwrites.addAll(desc.getArguments().keySet()), desc = desc.getRef() == null ? null : desc.getRef().getRef()) {
             desc.getArguments().values()
                     .stream()
-                    .filter(argument -> !argument.getValue().isAssignment() && argument.getValue().isDependent())
+                    .filter(argument -> !overwrites.contains(argument.getName()) && !argument.getValue().isAssignment() && argument.getValue().isDependent())
                     .map(argument -> new EventCriteria(argument.getName(), argument.getOp(), argument.getValue()))
                     .forEach(criteriaList::add);
         }
@@ -149,11 +193,12 @@ public class StateProcessor {
     }
 
     private List<EventAssignment> extractAssignments(StateDesc desc) {
+        final Set<String> overwrites = new HashSet<>();
         List<EventAssignment> assignments = new ArrayList<>();
-        for (; desc != null; desc = desc.getRef() == null ? null : desc.getRef().getRef()) {
+        for (; desc != null; overwrites.addAll(desc.getArguments().keySet()), desc = desc.getRef() == null ? null : desc.getRef().getRef()) {
             desc.getArguments().values()
                     .stream()
-                    .filter(argument -> argument.getValue().isAssignment())
+                    .filter(argument -> !overwrites.contains(argument.getName()) && argument.getValue().isAssignment())
                     .map(argument -> new EventAssignment(argument.getName(), ((ArgumentValue) argument.getValue()).position()))
                     .forEach(assignments::add);
         }

@@ -17,15 +17,6 @@ public class ProcessModel extends DemoProcessor {
 
     @Override
     protected void process() {
-        BehaviorModel model = parser.parse("net.app_proto.httpdemo");
-        System.out.println("=== model parsed ===");
-        System.out.println(model);
-
-        Display display = new ConsoleTextDisplay();
-        for (Pair<OutputDesc, List<AnalysisInstance>> entry : modelProcessor.process(model)) {
-            display.display(entry.getLeft(), entry.getRight());
-            System.out.println("+++ count " + entry.getRight().size() + " +++");
-        }
-
+        processModel("net.app_proto.httpdemo");
     }
 }

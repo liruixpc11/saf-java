@@ -20,6 +20,7 @@ public class StateInstance implements AnalysisInstance<StateDesc> {
     private StateDesc desc;
     private Map<DependentValue, StateInstance> refMap;
     private List<StateInstance> dependeeList;
+    private boolean dirty = false;
 
     public StateInstance(Event event, StateDesc desc) {
         this.event = event;
@@ -54,6 +55,7 @@ public class StateInstance implements AnalysisInstance<StateDesc> {
         assert desc.isDependent();
         refMap.put(value, instance);
         dependeeList.add(instance);
+        dirty = true;
     }
 
     public Map<DependentValue, StateInstance> getRefMap() {
@@ -76,10 +78,34 @@ public class StateInstance implements AnalysisInstance<StateDesc> {
     }
 
     public List<StateInstance> dependeeList() {
+        if (dirty) {
+            dependeeList = dependeeList.stream().distinct().collect(Collectors.toList());
+        }
+
         return dependeeList;
     }
 
     public IndependentValue resolve(String attribute) {
         return IndependentValue.of(event.attr(attribute));
+    }
+
+    public Event getEvent() {
+        return event;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        StateInstance instance = (StateInstance) o;
+
+        return event.equals(instance.event);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return event.hashCode();
     }
 }

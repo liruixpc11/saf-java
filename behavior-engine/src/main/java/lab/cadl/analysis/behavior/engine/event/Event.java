@@ -10,6 +10,7 @@ import java.util.Map;
  */
 public class Event {
     private long eventNumber;
+    private String eventNumberString;
     private Instant timestamp;
     private String type;
     private String origin;
@@ -81,5 +82,21 @@ public class Event {
         sb.append(", attributes=").append(attributes);
         sb.append('}');
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Event event = (Event) o;
+
+        return eventNumber == event.eventNumber;
+
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (eventNumber ^ (eventNumber >>> 32));
     }
 }

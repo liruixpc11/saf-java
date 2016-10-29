@@ -5,6 +5,11 @@ import lab.cadl.analysis.behavior.engine.event.Event;
 import lab.cadl.analysis.behavior.engine.event.EventAssignment;
 import lab.cadl.analysis.behavior.engine.event.EventCriteria;
 import lab.cadl.analysis.behavior.engine.event.EventRepository;
+import lab.cadl.analysis.behavior.engine.exception.EngineException;
+import lab.cadl.analysis.behavior.engine.instance.AnalysisInstance;
+import lab.cadl.analysis.behavior.engine.model.attribute.PrimeValue;
+import lab.cadl.analysis.behavior.engine.model.attribute.Value;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +18,8 @@ import java.sql.*;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 /**
  *
@@ -51,7 +58,7 @@ public class SqliteEventRepository implements EventRepository {
     private List<Event> executeQuery(String sql, List<EventAssignment> assignmentList) {
         List<Event> events = queryCache.get(sql);
         if (events != null) {
-            logger.debug("use sql cache for: {}", sql);
+            logger.trace("use sql cache for: {}", sql);
             return queryCache.get(sql);
         }
 
@@ -70,19 +77,25 @@ public class SqliteEventRepository implements EventRepository {
                 }
 
                 queryCache.put(sql, events);
-                logger.debug("query result count {}", events.size());
+                logger.trace("query result count {}", events.size());
                 return events;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e.getMessage(), e);
+            throw new EngineException(e.getMessage(), e);
         }
     }
 
     @Override
     public List<Event> query(String eventType, List<EventCriteria> criteriaList, List<EventAssignment> assignmentList) {
+        return query(eventType, criteriaList, assignmentList, null);
+    }
+
+    @Override
+    public List<Event> query(String eventType, List<EventCriteria> criteriaList, List<EventAssignment> assignments, Set<Long> excludes) {
         String sql = String.format("select * from %s", eventType);
         if (!criteriaList.isEmpty()) {
             sql += " where ";
+
             // TODO 处理不同类型的SQL条件
             boolean first = true;
             for (EventCriteria criteria : criteriaList) {
@@ -92,12 +105,29 @@ public class SqliteEventRepository implements EventRepository {
                     sql += " and ";
                 }
 
-                sql += criteria.getName() + " " + criteria.getOp().getOp() + " " + criteria.getValue().toString();
+                sql += criteria.getName() + " " + criteria.getOp().getOp() + " " + sql(criteria.getValue());
             }
         }
 
-        logger.debug("sqlite query string: {}", sql);
-        return executeQuery(sql, assignmentList);
+        logger.trace("sqlite query string: {}", sql);
+        if (excludes == null) {
+            return executeQuery(sql, assignments);
+        } else {
+            return executeQuery(sql, assignments).stream().filter(e -> !excludes.contains(e.getEventNumber())).collect(Collectors.toList());
+        }
+    }
+
+    private String sql(Value value) {
+        if (value instanceof PrimeValue) {
+            Object v = ((PrimeValue) value).getValue();
+            if (v instanceof String) {
+                return "'" + v + "'";
+            } else {
+                return v.toString();
+            }
+        } else {
+            throw new IllegalArgumentException("目前SQL查询中不支持改类型: " + value.getClass().getSimpleName());
+        }
     }
 
     private Event parseEvent(ResultSet rs, List<String> columns, List<EventAssignment> assignmentList) throws SQLException {
@@ -115,7 +145,7 @@ public class SqliteEventRepository implements EventRepository {
 
         if (assignmentList != null) {
             for (EventAssignment assignment : assignmentList) {
-                event.attr(assignment.getName(), rs.getObject(assignment.getPosition() + 4));
+                event.attr(assignment.getName(), rs.getObject(assignment.getPosition() + 5));
             }
         }
 
@@ -154,7 +184,7 @@ public class SqliteEventRepository implements EventRepository {
     }
 
     public static void main(String[] args) throws SQLException {
-        try(EventRepository repository = new SqliteEventRepository("/Users/lirui/IdeaProjects/analysis-parent/data/sqlite/dnsflows_5000rec.sqlite")) {
+        try (EventRepository repository = new SqliteEventRepository("/Users/lirui/IdeaProjects/analysis-parent/data/sqlite/dnsflows_5000rec.sqlite")) {
             for (Event event : repository.list("PACKET_DNS")) {
                 System.out.println(event);
             }
